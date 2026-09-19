@@ -13,7 +13,7 @@ button{margin-top:20px;padding:16px 30px;border:0;border-radius:18px;color:white
 <div class="tags">FAYIS • AFLAH • ADIL • SINAN</div><p class="note">Previous audio stops immediately. Winner audio starts automatically.</p>
 </div>
 <script>
-const names=['FAYIS','AFLAH','ADIL','SINAN'], files=['audio/fayis.mp3','audio/aflah.mp3','audio/adil.mp3','audio/sinan.mp3'];
+const names=['FAYIS','AFLAH','ADIL','SINAN'], files=['fayis.mp3','aflah.mp3','adil.mp3','sinan.mp3'];
 const A=files.map(x=>new Audio(x)), c=document.getElementById('w'),x=c.getContext('2d'),N=4,S=Math.PI*2/N;let rot=0,busy=false;
 function draw(){x.clearRect(0,0,700,700);x.save();x.translate(350,350);x.rotate(rot);
 for(let i=0;i<N;i++){let a=i*S-S/2,g=x.createLinearGradient(0,0,300,300);g.addColorStop(0,i%2?'#22d9ff':'#ff2db7');g.addColorStop(1,i%2?'#3150ff':'#6b1cff');x.beginPath();x.moveTo(0,0);x.arc(0,0,325,a,a+S);x.closePath();x.fillStyle=g;x.fill();x.lineWidth=8;x.strokeStyle='#090713';x.stroke();x.save();x.rotate(i*S);x.textAlign='center';x.font='900 46px Arial';x.fillStyle='#fff';x.shadowColor='#000';x.shadowBlur=10;x.fillText(names[i],205,0);x.restore()}x.restore()}draw();
