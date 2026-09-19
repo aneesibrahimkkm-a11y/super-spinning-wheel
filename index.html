@@ -3,228 +3,580 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>SUPER SPINNING WHEEL</title>
 
 <style>
 *{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
 body{
-  min-height:100vh;
-  background:#080812;
-  color:white;
-  font-family:Arial,sans-serif;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  overflow:hidden;
+    min-height:100vh;
+    background:
+        radial-gradient(circle at center,#24113d 0%,#0b0713 45%,#030207 100%);
+    color:white;
+    font-family:Arial,Helvetica,sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
 }
 
-.container{
-  text-align:center;
-  width:100%;
-  max-width:600px;
-  padding:20px;
+.main{
+    width:100%;
+    max-width:650px;
+    padding:20px;
+    text-align:center;
 }
 
-h1{
-  font-size:clamp(28px,8vw,52px);
-  margin-bottom:8px;
-  color:#fff;
-  text-shadow:
-    0 0 10px #9d35ff,
-    0 0 25px #9d35ff;
+.title{
+    font-size:clamp(28px,8vw,52px);
+    font-weight:900;
+    letter-spacing:2px;
+    margin-bottom:5px;
+    text-shadow:
+        0 0 8px #b52cff,
+        0 0 20px #b52cff,
+        0 0 40px #7b00ff;
 }
 
 .subtitle{
-  color:#aaa;
-  margin-bottom:20px;
+    color:#bdbdbd;
+    font-size:14px;
+    letter-spacing:2px;
+    margin-bottom:22px;
 }
 
-.wheel-box{
-  position:relative;
-  width:min(88vw,430px);
-  height:min(88vw,430px);
-  margin:auto;
+.wheel-area{
+    position:relative;
+    width:min(88vw,470px);
+    height:min(88vw,470px);
+    margin:0 auto;
 }
 
-canvas{
-  width:100%;
-  height:100%;
-  border-radius:50%;
-  filter:
-    drop-shadow(0 0 12px #9d35ff)
-    drop-shadow(0 0 30px #9d35ff);
+#wheel{
+    width:100%;
+    height:100%;
+    display:block;
+    border-radius:50%;
+    filter:
+        drop-shadow(0 0 8px #a400ff)
+        drop-shadow(0 0 25px #7b00ff);
 }
 
 .pointer{
-  position:absolute;
-  top:-8px;
-  left:50%;
-  transform:translateX(-50%);
-  width:0;
-  height:0;
-  border-left:18px solid transparent;
-  border-right:18px solid transparent;
-  border-top:38px solid #fff;
-  filter:drop-shadow(0 0 8px #fff);
-  z-index:5;
+    position:absolute;
+    z-index:10;
+    left:50%;
+    top:-5px;
+    transform:translateX(-50%);
+    width:0;
+    height:0;
+    border-left:20px solid transparent;
+    border-right:20px solid transparent;
+    border-top:42px solid white;
+    filter:
+        drop-shadow(0 0 5px white)
+        drop-shadow(0 0 12px #c000ff);
 }
 
-button{
-  margin-top:25px;
-  padding:15px 42px;
-  border:none;
-  border-radius:50px;
-  background:linear-gradient(90deg,#7b2cff,#d32cff);
-  color:white;
-  font-size:20px;
-  font-weight:bold;
-  cursor:pointer;
-  box-shadow:
-    0 0 15px #9d35ff,
-    0 0 35px #9d35ff;
+.spin-button{
+    margin-top:28px;
+    padding:16px 45px;
+    border:none;
+    border-radius:50px;
+    background:linear-gradient(90deg,#761cff,#d500ff);
+    color:white;
+    font-size:21px;
+    font-weight:900;
+    letter-spacing:1px;
+    cursor:pointer;
+    box-shadow:
+        0 0 12px #a900ff,
+        0 0 30px #7200ff;
+    transition:.2s;
 }
 
-button:disabled{
-  opacity:.5;
-  cursor:not-allowed;
+.spin-button:active{
+    transform:scale(.94);
 }
 
-#winner{
-  min-height:45px;
-  margin-top:22px;
-  font-size:28px;
-  font-weight:bold;
-  color:#fff;
-  text-shadow:0 0 15px #ff38ff;
+.spin-button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.winner{
+    min-height:55px;
+    margin-top:20px;
+    font-size:30px;
+    font-weight:900;
+    color:white;
+    text-shadow:
+        0 0 10px #ff00e6,
+        0 0 25px #9d00ff;
+}
+
+@media(max-width:500px){
+    .main{
+        padding:14px;
+    }
+
+    .subtitle{
+        margin-bottom:15px;
+    }
+
+    .spin-button{
+        margin-top:20px;
+        padding:14px 38px;
+        font-size:18px;
+    }
+
+    .winner{
+        font-size:25px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="main">
 
-  <h1>SUPER SPINNING WHEEL</h1>
-  <div class="subtitle">WHO WILL BE THE WINNER?</div>
+    <div class="title">SUPER SPINNING WHEEL</div>
 
-  <div class="wheel-box">
-    <div class="pointer"></div>
-    <canvas id="wheel" width="700" height="700"></canvas>
-  </div>
+    <div class="subtitle">
+        SPIN THE WHEEL • FIND THE WINNER
+    </div>
 
-  <button id="spinBtn">🎡 SPIN</button>
+    <div class="wheel-area">
 
-  <div id="winner"></div>
+        <div class="pointer"></div>
+
+        <canvas id="wheel" width="800" height="800"></canvas>
+
+    </div>
+
+    <button class="spin-button" id="spinButton">
+        🎡 SPIN
+    </button>
+
+    <div class="winner" id="winner"></div>
 
 </div>
 
 <script>
-const people = [
-  {
-    name: "FAYIS",
-    audio: "./fayis.mp3"
-  },
-  {
-    name: "AFLAH",
-    audio: "./aflah.mp3"
-  },
-  {
-    name: "ADIL",
-    audio: "./adil.mp3"
-  },
-  {
-    name: "SINAN",
-    audio: "./sinan.mp3"
-  }
+
+/* =========================
+   PLAYERS + AUDIO
+========================= */
+
+const players = [
+    {
+        name: "FAYIS",
+        audio: "fayis.mp3"
+    },
+    {
+        name: "AFLAH",
+        audio: "aflah.mp3"
+    },
+    {
+        name: "ADIL",
+        audio: "adil.mp3"
+    },
+    {
+        name: "SINAN",
+        audio: "sinan.mp3"
+    }
 ];
+
+
+/* =========================
+   WHEEL SETUP
+========================= */
 
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
-const spinBtn = document.getElementById("spinBtn");
+
+const spinButton = document.getElementById("spinButton");
 const winnerText = document.getElementById("winner");
 
-const N = people.length;
-const segment = (Math.PI * 2) / N;
+const centerX = canvas.width / 2;
+const centerY = canvas.height / 2;
+const radius = 375;
+
+const totalPlayers = players.length;
+const segmentAngle = (Math.PI * 2) / totalPlayers;
 
 let rotation = 0;
 let spinning = false;
-let currentAudio = null;
 
-const audioByName = {};
 
-people.forEach(person => {
-  const audio = new Audio(person.audio);
-  audio.preload = "auto";
-  audioByName[person.name] = audio;
+/* =========================
+   AUDIO SETUP
+========================= */
+
+const audioMap = {};
+
+players.forEach(player => {
+
+    const audio = new Audio(player.audio);
+
+    audio.preload = "auto";
+
+    audioMap[player.name] = audio;
+
 });
 
+let playingAudio = null;
+
+
+function stopAudio(){
+
+    if(playingAudio){
+
+        playingAudio.pause();
+        playingAudio.currentTime = 0;
+        playingAudio = null;
+
+    }
+
+}
+
+
+function playWinnerAudio(playerName){
+
+    stopAudio();
+
+    const audio = audioMap[playerName];
+
+    if(!audio){
+        return;
+    }
+
+    playingAudio = audio;
+
+    audio.currentTime = 0;
+
+    audio.play().catch(error => {
+
+        console.log("Audio could not autoplay:", error);
+
+    });
+
+}
+
+
+/* =========================
+   DRAW WHEEL
+========================= */
+
 function drawWheel(){
-  const cx = canvas.width / 2;
-  const cy = canvas.height / 2;
-  const radius = canvas.width / 2 - 12;
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
 
-  for(let i=0;i<N;i++){
-
-    const start = rotation + i * segment - segment/2;
-    const end = start + segment;
 
     const colors = [
-      "#ff1744",
-      "#7c4dff",
-      "#00e5ff",
-      "#ffea00"
+        "#ff1744",
+        "#7c4dff",
+        "#00d9ff",
+        "#ffcc00"
     ];
 
-    ctx.beginPath();
-    ctx.moveTo(cx,cy);
-    ctx.arc(cx,cy,radius,start,end);
-    ctx.closePath();
 
-    ctx.fillStyle = colors[i];
+    for(let i = 0; i < totalPlayers; i++){
+
+        const startAngle =
+            rotation +
+            i * segmentAngle -
+            segmentAngle / 2;
+
+        const endAngle =
+            startAngle +
+            segmentAngle;
+
+
+        /* Segment */
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            centerX,
+            centerY
+        );
+
+        ctx.arc(
+            centerX,
+            centerY,
+            radius,
+            startAngle,
+            endAngle
+        );
+
+        ctx.closePath();
+
+        ctx.fillStyle = colors[i];
+
+        ctx.fill();
+
+
+        /* Border */
+
+        ctx.strokeStyle = "#ffffff";
+
+        ctx.lineWidth = 7;
+
+        ctx.stroke();
+
+
+        /* Name */
+
+        const textAngle =
+            startAngle +
+            segmentAngle / 2;
+
+
+        const textX =
+            centerX +
+            Math.cos(textAngle) * radius * 0.62;
+
+        const textY =
+            centerY +
+            Math.sin(textAngle) * radius * 0.62;
+
+
+        ctx.save();
+
+        ctx.translate(
+            textX,
+            textY
+        );
+
+        ctx.rotate(
+            textAngle + Math.PI / 2
+        );
+
+
+        ctx.fillStyle = "#ffffff";
+
+        ctx.font =
+            "900 48px Arial";
+
+        ctx.textAlign = "center";
+
+        ctx.textBaseline = "middle";
+
+        ctx.shadowColor = "#000000";
+
+        ctx.shadowBlur = 10;
+
+
+        ctx.fillText(
+            players[i].name,
+            0,
+            0
+        );
+
+
+        ctx.restore();
+
+    }
+
+
+    /* Center circle */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        centerX,
+        centerY,
+        55,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle = "#090909";
+
     ctx.fill();
 
     ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 5;
+
+    ctx.lineWidth = 7;
+
     ctx.stroke();
 
-    ctx.save();
 
-    const middle = start + segment/2;
+    ctx.beginPath();
 
-    ctx.translate(
-      cx + Math.cos(middle) * radius * .62,
-      cy + Math.sin(middle) * radius * .62
+    ctx.arc(
+        centerX,
+        centerY,
+        18,
+        0,
+        Math.PI * 2
     );
 
-    ctx.rotate(middle + Math.PI/2);
+    ctx.fillStyle = "#c026ff";
 
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 42px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.shadowColor = "#c026ff";
 
-    ctx.shadowColor = "#000";
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 20;
 
-    ctx.fillText(people[i].name,0,0);
+    ctx.fill();
 
-    ctx.restore();
-  }
+    ctx.shadowBlur = 0;
 
-  ctx.beginPath();
-  ctx.arc(cx,cy,48,0,Math.PI*2);
-  ctx.fillStyle="#111";
-  ctx.fill();
-  ctx.strokeStyle="#fff";
-  ctx.lineWidth=5;
-  ctx.stroke();
 }
 
-draw
+
+/* First draw */
+
+drawWheel();
+
+
+/* =========================
+   SPIN
+========================= */
+
+spinButton.addEventListener("click", function(){
+
+    if(spinning){
+        return;
+    }
+
+    spinning = true;
+
+    spinButton.disabled = true;
+
+    winnerText.textContent = "";
+
+    /* Stop previous winner audio immediately */
+
+    stopAudio();
+
+
+    /* Choose winner */
+
+    const winnerIndex =
+        Math.floor(
+            Math.random() * totalPlayers
+        );
+
+
+    const winner =
+        players[winnerIndex];
+
+
+    /*
+       Pointer is at the top.
+       Target angle makes the selected
+       segment center land exactly there.
+    */
+
+    const pointerAngle = -Math.PI / 2;
+
+
+    const targetRotation =
+        pointerAngle -
+        winnerIndex * segmentAngle +
+        Math.PI * 2 * 7;
+
+
+    const startRotation = rotation;
+
+    const totalRotation =
+        targetRotation - startRotation;
+
+
+    const duration = 4500;
+
+    const startTime =
+        performance.now();
+
+
+    function animate(currentTime){
+
+        const elapsed =
+            currentTime - startTime;
+
+
+        const progress =
+            Math.min(
+                elapsed / duration,
+                1
+            );
+
+
+        /* Smooth slow-down */
+
+        const eased =
+            1 -
+            Math.pow(
+                1 - progress,
+                4
+            );
+
+
+        rotation =
+            startRotation +
+            totalRotation * eased;
+
+
+        drawWheel();
+
+
+        if(progress < 1){
+
+            requestAnimationFrame(
+                animate
+            );
+
+        }else{
+
+            rotation =
+                targetRotation;
+
+            drawWheel();
+
+
+            /* Winner */
+
+            winnerText.textContent =
+                "🏆 WINNER: " +
+                winner.name;
+
+
+            /* Exact matching audio */
+
+            playWinnerAudio(
+                winner.name
+            );
+
+
+            spinning = false;
+
+            spinButton.disabled = false;
+
+        }
+
+    }
+
+
+    requestAnimationFrame(
+        animate
+    );
+
+});
+
+</script>
+
+</body>
+</html>
