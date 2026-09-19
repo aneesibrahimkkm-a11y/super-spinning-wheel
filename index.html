@@ -1,831 +1,230 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUPER SPINNING WHEEL</title>
+
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
 body{
-margin:0;min-height:100vh;background:radial-gradient(circle,#25104a,#070711 65%);
-color:white;font-family:Arial;text-align:center;display:flex;justify-content:center
+  min-height:100vh;
+  background:#080812;
+  color:white;
+  font-family:Arial,sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
 }
-.wrap{width:min(760px,100%);padding:22px 14px}
-h1{font-size:clamp(30px,8vw,60px);margin:8px 0;text-shadow:0 0 12px #b82cff,0 0 35px #ff27bd}
-.sub{color:#c9bddc;font-weight:bold}
-.stage{position:relative;width:min(620px,94vw);aspect-ratio:1;margin:auto}
+
+.container{
+  text-align:center;
+  width:100%;
+  max-width:600px;
+  padding:20px;
+}
+
+h1{
+  font-size:clamp(28px,8vw,52px);
+  margin-bottom:8px;
+  color:#fff;
+  text-shadow:
+    0 0 10px #9d35ff,
+    0 0 25px #9d35ff;
+}
+
+.subtitle{
+  color:#aaa;
+  margin-bottom:20px;
+}
+
+.wheel-box{
+  position:relative;
+  width:min(88vw,430px);
+  height:min(88vw,430px);
+  margin:auto;
+}
+
+canvas{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  filter:
+    drop-shadow(0 0 12px #9d35ff)
+    drop-shadow(0 0 30px #9d35ff);
+}
+
 .pointer{
-position:absolute;z-index:2;left:50%;top:0;transform:translateX(-50%);
-width:0;height:0;border-left:18px solid transparent;
-border-right:18px solid transparent;border-bottom:40px solid white;
-filter:drop-shadow(0 0 14px #ff28cf)
+  position:absolute;
+  top:-8px;
+  left:50%;
+  transform:translateX(-50%);
+  width:0;
+  height:0;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-top:38px solid #fff;
+  filter:drop-shadow(0 0 8px #fff);
+  z-index:5;
 }
-canvas{width:100%;height:100%;filter:drop-shadow(0 0 25px #9d35ff)}
-.center{
-position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-width:82px;height:82px;border-radius:50%;display:grid;place-items:center;
-background:#0a0814;border:5px solid white;box-shadow:0 0 25px #a832ff;
-font-size:12px;font-weight:900
-}
+
 button{
-margin-top:20px;padding:16px 30px;border:0;border-radius:18px;color:white;
-background:linear-gradient(135deg,#7622ff,#ff1cae);font-size:20px;
-font-weight:900;box-shadow:0 0 25px #b42cff;cursor:pointer
+  margin-top:25px;
+  padding:15px 42px;
+  border:none;
+  border-radius:50px;
+  background:linear-gradient(90deg,#7b2cff,#d32cff);
+  color:white;
+  font-size:20px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:
+    0 0 15px #9d35ff,
+    0 0 35px #9d35ff;
 }
-button:disabled{opacity:.5}
-.result{margin:18px 0;font-size:25px;font-weight:900}
-.tags{color:#ddd}.note{font-size:13px;color:#9289a4}
+
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+#winner{
+  min-height:45px;
+  margin-top:22px;
+  font-size:28px;
+  font-weight:bold;
+  color:#fff;
+  text-shadow:0 0 15px #ff38ff;
+}
 </style>
 </head>
 
 <body>
-<div class="wrap">
 
-<h1>SUPER SPINNING WHEEL</h1>
-<p class="sub">WHO'S THE WINNER? 😈</p>
+<div class="container">
 
-<div class="stage">
-<div class="pointer"></div>
-<canvas id="w" width="700" height="700"></canvas>
-<div class="center">SPIN</div>
-</div>
+  <h1>SUPER SPINNING WHEEL</h1>
+  <div class="subtitle">WHO WILL BE THE WINNER?</div>
 
-<button id="b">🎯 SPIN THE WHEEL</button>
+  <div class="wheel-box">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="700" height="700"></canvas>
+  </div>
 
-<div id="r" class="result">Ready?</div>
-<div class="tags">FAYIS • AFLAH • ADIL • SINAN</div>
-<p class="note">Winner audio plays automatically.</p>
+  <button id="spinBtn">🎡 SPIN</button>
+
+  <div id="winner"></div>
 
 </div>
 
 <script>
-
-/* EXACT NAME → AUDIO MAPPING */
-
 const people = [
-  { name:"FAYIS", audio:"./fayis.mp3" },
-  { name:"AFLAH", audio:"./aflah.mp3" },
-  { name:"ADIL",  audio:"./adil.mp3"  },
-  { name:"SINAN", audio:"./sinan.mp3" }
+  {
+    name: "FAYIS",
+    audio: "./fayis.mp3"
+  },
+  {
+    name: "AFLAH",
+    audio: "./aflah.mp3"
+  },
+  {
+    name: "ADIL",
+    audio: "./adil.mp3"
+  },
+  {
+    name: "SINAN",
+    audio: "./sinan.mp3"
+  }
 ];
 
-const audios = people.map(person => {
-  const a = new Audio();
-  a.src = person.audio;
-  a.preload = "auto";
-  return a;
-});
-
-const canvas = document.getElementById("w");
+const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
-const button = document.getElementById("b");
-const result = document.getElementById("r");
+const spinBtn = document.getElementById("spinBtn");
+const winnerText = document.getElementById("winner");
 
 const N = people.length;
-const S = Math.PI * 2 / N;
+const segment = (Math.PI * 2) / N;
 
 let rotation = 0;
 let spinning = false;
+let currentAudio = null;
 
+const audioByName = {};
 
-/* DRAW */
+people.forEach(person => {
+  const audio = new Audio(person.audio);
+  audio.preload = "auto";
+  audioByName[person.name] = audio;
+});
 
-function draw(){
+function drawWheel(){
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const radius = canvas.width / 2 - 12;
 
-  ctx.clearRect(0,0,700,700);
-
-  ctx.save();
-  ctx.translate(350,350);
-  ctx.rotate(rotation);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
   for(let i=0;i<N;i++){
 
-    const start = i*S-S/2;
+    const start = rotation + i * segment - segment/2;
+    const end = start + segment;
 
-    const gradient =
-      ctx.createLinearGradient(0,0,300,300);
-
-    gradient.addColorStop(
-      0,
-      i%2 ? "#22d9ff" : "#ff2db7"
-    );
-
-    gradient.addColorStop(
-      1,
-      i%2 ? "#3150ff" : "#6b1cff"
-    );
+    const colors = [
+      "#ff1744",
+      "#7c4dff",
+      "#00e5ff",
+      "#ffea00"
+    ];
 
     ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.arc(0,0,325,start,start+S);
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,radius,start,end);
     ctx.closePath();
 
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = colors[i];
     ctx.fill();
 
-    ctx.lineWidth = 8;
-    ctx.strokeStyle = "#090713";
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 5;
     ctx.stroke();
 
     ctx.save();
-    ctx.rotate(i*S);
 
-    ctx.textAlign = "center";
-    ctx.font = "900 46px Arial";
+    const middle = start + segment/2;
+
+    ctx.translate(
+      cx + Math.cos(middle) * radius * .62,
+      cy + Math.sin(middle) * radius * .62
+    );
+
+    ctx.rotate(middle + Math.PI/2);
+
     ctx.fillStyle = "#fff";
-    ctx.shadowColor = "#000";
-    ctx.shadowBlur = 10;
+    ctx.font = "bold 42px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
-    ctx.fillText(people[i].name,205,0);
+    ctx.shadowColor = "#000";
+    ctx.shadowBlur = 8;
+
+    ctx.fillText(people[i].name,0,0);
 
     ctx.restore();
   }
 
-  ctx.restore();
+  ctx.beginPath();
+  ctx.arc(cx,cy,48,0,Math.PI*2);
+  ctx.fillStyle="#111";
+  ctx.fill();
+  ctx.strokeStyle="#fff";
+  ctx.lineWidth=5;
+  ctx.stroke();
 }
 
-draw();
-
-
-/* STOP EVERY AUDIO */
-
-function stopAllAudio(){
-
-  audios.forEach(audio => {
-
-    audio.pause();
-
-    audio.currentTime = 0;
-
-  });
-
-}
-
-
-/* PLAY ONLY THE SELECTED WINNER */
-
-function playWinner(index){
-
-  stopAllAudio();
-
-  const winnerAudio = audios[index];
-
-  winnerAudio.currentTime = 0;
-
-  winnerAudio.play().catch(error => {
-
-    console.log("Audio error:",error);
-
-    result.textContent =
-      "🔊 Tap the page once, then spin again";
-
-  });
-
-}
-
-
-/* SPIN */
-
-button.addEventListener("click",function(){
-
-  if(spinning) return;
-
-  spinning = true;
-  button.disabled = true;
-
-  /* Absolutely no audio during spinning */
-  stopAllAudio();
-
-  result.textContent = "SPINNING…";
-
-  /* Select winner ONCE */
-  const winnerIndex =
-    Math.floor(Math.random() * N);
-
-  const startRotation = rotation;
-
-  const targetRotation =
-    -winnerIndex * S;
-
-  let delta =
-    targetRotation -
-    ((rotation % (Math.PI*2)) + Math.PI*2) %
-    (Math.PI*2);
-
-  while(delta < 0){
-    delta += Math.PI*2;
-  }
-
-  const endRotation =
-    startRotation +
-    (7 + Math.random()*2) * Math.PI*2 +
-    delta;
-
-  const startTime = performance.now();
-  const duration = 5200;
-
-
-  function animate(now){
-
-    const progress =
-      Math.min(1,(now-startTime)/duration);
-
-    const ease =
-      1-Math.pow(1-progress,4);
-
-    rotation =
-      startRotation +
-      (endRotation-startRotation)*ease;
-
-    draw();
-
-
-    if(progress < 1){
-
-      requestAnimationFrame(animate);
-
-    }else{
-
-      rotation = endRotation;
-
-      draw();
-
-      /* SAME winnerIndex used for BOTH name and audio */
-
-      result.textContent =
-        "🎉 WINNER: " +
-        people[winnerIndex].name +
-        " 🎉";
-
-      playWinner(winnerIndex);
-
-      spinning = false;
-      button.disabled = false;
-
-    }
-
-  }
-
-  requestAnimationFrame(animate);
-
-});
-
-</script>
-
-</body>
-</html>.tags{color:#ddd}.note{font-size:13px;color:#9289a4}
-</style>
-</head>
-
-<body>
-<div class="wrap">
-
-<h1>SUPER SPINNING WHEEL</h1>
-<p class="sub">WHO'S THE WINNER? 😈</p>
-
-<div class="stage">
-<div class="pointer"></div>
-<canvas id="w" width="700" height="700"></canvas>
-<div class="center">SPIN</div>
-</div>
-
-<button id="b">🎯 SPIN THE WHEEL</button>
-
-<div id="r" class="result">Ready?</div>
-<div class="tags">FAYIS • AFLAH • ADIL • SINAN</div>
-<p class="note">Winner audio plays automatically.</p>
-
-</div>
-
-<script>
-
-/* EXACT NAME → AUDIO MAPPING */
-
-const people = [
-  { name:"FAYIS", audio:"./fayis.mp3" },
-  { name:"AFLAH", audio:"./aflah.mp3" },
-  { name:"ADIL",  audio:"./adil.mp3"  },
-  { name:"SINAN", audio:"./sinan.mp3" }
-];
-
-const audios = people.map(person => {
-  const a = new Audio();
-  a.src = person.audio;
-  a.preload = "auto";
-  return a;
-});
-
-const canvas = document.getElementById("w");
-const ctx = canvas.getContext("2d");
-const button = document.getElementById("b");
-const result = document.getElementById("r");
-
-const N = people.length;
-const S = Math.PI * 2 / N;
-
-let rotation = 0;
-let spinning = false;
-
-
-/* DRAW */
-
-function draw(){
-
-  ctx.clearRect(0,0,700,700);
-
-  ctx.save();
-  ctx.translate(350,350);
-  ctx.rotate(rotation);
-
-  for(let i=0;i<N;i++){
-
-    const start = i*S-S/2;
-
-    const gradient =
-      ctx.createLinearGradient(0,0,300,300);
-
-    gradient.addColorStop(
-      0,
-      i%2 ? "#22d9ff" : "#ff2db7"
-    );
-
-    gradient.addColorStop(
-      1,
-      i%2 ? "#3150ff" : "#6b1cff"
-    );
-
-    ctx.beginPath();
-    ctx.moveTo(0,0);
-    ctx.arc(0,0,325,start,start+S);
-    ctx.closePath();
-
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    ctx.lineWidth = 8;
-    ctx.strokeStyle = "#090713";
-    ctx.stroke();
-
-    ctx.save();
-    ctx.rotate(i*S);
-
-    ctx.textAlign = "center";
-    ctx.font = "900 46px Arial";
-    ctx.fillStyle = "#fff";
-    ctx.shadowColor = "#000";
-    ctx.shadowBlur = 10;
-
-    ctx.fillText(people[i].name,205,0);
-
-    ctx.restore();
-  }
-
-  ctx.restore();
-}
-
-draw();
-
-
-/* STOP EVERY AUDIO */
-
-function stopAllAudio(){
-
-  audios.forEach(audio => {
-
-    audio.pause();
-
-    audio.currentTime = 0;
-
-  });
-
-}
-
-
-/* PLAY ONLY THE SELECTED WINNER */
-
-function playWinner(index){
-
-  stopAllAudio();
-
-  const winnerAudio = audios[index];
-
-  winnerAudio.currentTime = 0;
-
-  winnerAudio.play().catch(error => {
-
-    console.log("Audio error:",error);
-
-    result.textContent =
-      "🔊 Tap the page once, then spin again";
-
-  });
-
-}
-
-
-/* SPIN */
-
-button.addEventListener("click",function(){
-
-  if(spinning) return;
-
-  spinning = true;
-  button.disabled = true;
-
-  /* Absolutely no audio during spinning */
-  stopAllAudio();
-
-  result.textContent = "SPINNING…";
-
-  /* Select winner ONCE */
-  const winnerIndex =
-    Math.floor(Math.random() * N);
-
-  const startRotation = rotation;
-
-  const targetRotation =
-    -winnerIndex * S;
-
-  let delta =
-    targetRotation -
-    ((rotation % (Math.PI*2)) + Math.PI*2) %
-    (Math.PI*2);
-
-  while(delta < 0){
-    delta += Math.PI*2;
-  }
-
-  const endRotation =
-    startRotation +
-    (7 + Math.random()*2) * Math.PI*2 +
-    delta;
-
-  const startTime = performance.now();
-  const duration = 5200;
-
-
-  function animate(now){
-
-    const progress =
-      Math.min(1,(now-startTime)/duration);
-
-    const ease =
-      1-Math.pow(1-progress,4);
-
-    rotation =
-      startRotation +
-      (endRotation-startRotation)*ease;
-
-    draw();
-
-
-    if(progress < 1){
-
-      requestAnimationFrame(animate);
-
-    }else{
-
-      rotation = endRotation;
-
-      draw();
-
-      /* SAME winnerIndex used for BOTH name and audio */
-
-      result.textContent =
-        "🎉 WINNER: " +
-        people[winnerIndex].name +
-        " 🎉";
-
-      playWinner(winnerIndex);
-
-      spinning = false;
-      button.disabled = false;
-
-    }
-
-  }
-
-  requestAnimationFrame(animate);
-
-});
-
-</script>
-
-</body>
-</html>  filter:drop-shadow(0 0 25px #9d35ff)
-}
-.center{
-  position:absolute;left:50%;top:50%;
-  transform:translate(-50%,-50%);
-  width:82px;height:82px;border-radius:50%;
-  display:grid;place-items:center;
-  background:#0a0814;border:5px solid white;
-  box-shadow:0 0 25px #a832ff;
-  font-size:12px;font-weight:900
-}
-button{
-  margin-top:20px;padding:16px 30px;
-  border:0;border-radius:18px;color:white;
-  background:linear-gradient(135deg,#7622ff,#ff1cae);
-  font-size:20px;font-weight:900;
-  box-shadow:0 0 25px #b42cff;
-  cursor:pointer
-}
-button:disabled{opacity:.5}
-.result{
-  margin:18px 0;font-size:25px;font-weight:900
-}
-.tags{color:#ddd}
-.note{font-size:13px;color:#9289a4}
-</style>
-</head>
-
-<body>
-<div class="wrap">
-
-<h1>SUPER SPINNING WHEEL</h1>
-<p class="sub">WHO'S THE WINNER? 😈</p>
-
-<div class="stage">
-  <div class="pointer"></div>
-  <canvas id="w" width="700" height="700"></canvas>
-  <div class="center">SPIN</div>
-</div>
-
-<button id="b">🎯 SPIN THE WHEEL</button>
-
-<div id="r" class="result">Ready?</div>
-
-<div class="tags">FAYIS • AFLAH • ADIL • SINAN</div>
-
-<p class="note">
-Previous audio stops immediately. Winner audio starts automatically.
-</p>
-
-</div>
-
-<script>
-
-const names = ['FAYIS','AFLAH','ADIL','SINAN'];
-
-const files = [
-  './fayis.mp3',
-  './aflah.mp3',
-  './adil.mp3',
-  './sinan.mp3'
-];
-
-const A = files.map(file => {
-  const audio = new Audio(file);
-  audio.preload = 'auto';
-  return audio;
-});
-
-const c = document.getElementById('w');
-const x = c.getContext('2d');
-
-const b = document.getElementById('b');
-const r = document.getElementById('r');
-
-const N = 4;
-const S = Math.PI * 2 / N;
-
-let rot = 0;
-let busy = false;
-
-
-/* DRAW WHEEL */
-
-function draw(){
-
-  x.clearRect(0,0,700,700);
-
-  x.save();
-  x.translate(350,350);
-  x.rotate(rot);
-
-  for(let i=0;i<N;i++){
-
-    let a = i*S-S/2;
-
-    let g = x.createLinearGradient(0,0,300,300);
-
-    g.addColorStop(
-      0,
-      i%2 ? '#22d9ff' : '#ff2db7'
-    );
-
-    g.addColorStop(
-      1,
-      i%2 ? '#3150ff' : '#6b1cff'
-    );
-
-    x.beginPath();
-    x.moveTo(0,0);
-    x.arc(0,0,325,a,a+S);
-    x.closePath();
-
-    x.fillStyle = g;
-    x.fill();
-
-    x.lineWidth = 8;
-    x.strokeStyle = '#090713';
-    x.stroke();
-
-    x.save();
-
-    x.rotate(i*S);
-
-    x.textAlign = 'center';
-    x.font = '900 46px Arial';
-    x.fillStyle = '#fff';
-
-    x.shadowColor = '#000';
-    x.shadowBlur = 10;
-
-    x.fillText(names[i],205,0);
-
-    x.restore();
-  }
-
-  x.restore();
-}
-
-draw();
-
-
-/* STOP ALL AUDIO */
-
-function stopAll(){
-
-  A.forEach(audio => {
-
-    audio.pause();
-
-    try{
-      audio.currentTime = 0;
-    }catch(e){}
-
-  });
-
-}
-
-
-/* AUDIO UNLOCK */
-
-function unlockAudio(){
-
-  A.forEach(audio => {
-
-    audio.muted = true;
-
-    const promise = audio.play();
-
-    if(promise){
-
-      promise.then(() => {
-
-        audio.pause();
-
-        audio.currentTime = 0;
-
-        audio.muted = false;
-
-      }).catch(() => {
-
-        audio.muted = false;
-
-      });
-
-    }else{
-
-      audio.muted = false;
-
-    }
-
-  });
-
-}
-
-
-/* PLAY WINNER */
-
-function playWinner(index){
-
-  const audio = A[index];
-
-  stopAll();
-
-  audio.currentTime = 0;
-  audio.muted = false;
-
-  audio.play().then(() => {
-
-    console.log('Playing:', names[index]);
-
-  }).catch(error => {
-
-    console.log('Audio blocked:', error);
-
-    r.textContent =
-      '🔊 Tap the screen once to enable audio';
-
-  });
-
-}
-
-
-/* SPIN */
-
-b.onclick = () => {
-
-  if(busy) return;
-
-  busy = true;
-  b.disabled = true;
-
-  /*
-    IMPORTANT:
-    This happens immediately inside the button click.
-    It unlocks audio before the animation starts.
-  */
-
-  unlockAudio();
-
-  stopAll();
-
-  r.textContent = 'SPINNING…';
-
-  const win = Math.floor(Math.random()*N);
-
-  const start = rot;
-
-  const target =
-    -win*S;
-
-  let delta =
-    target -
-    ((rot%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
-
-  while(delta < 0)
-    delta += 2*Math.PI;
-
-  const end =
-    start +
-    (7 + Math.random()*2)*2*Math.PI +
-    delta;
-
-  const t = performance.now();
-
-  const dur = 5200;
-
-
-  function animate(q){
-
-    const p =
-      Math.min(1,(q-t)/dur);
-
-    const e =
-      1-Math.pow(1-p,4);
-
-    rot =
-      start +
-      (end-start)*e;
-
-    draw();
-
-
-    if(p < 1){
-
-      requestAnimationFrame(animate);
-
-    }else{
-
-      rot = end;
-
-      draw();
-
-      r.textContent =
-        '🎉 WINNER: ' +
-        names[win] +
-        ' 🎉';
-
-      /* PLAY WINNER AUDIO */
-
-      playWinner(win);
-
-      busy = false;
-      b.disabled = false;
-
-    }
-
-  }
-
-  requestAnimationFrame(animate);
-
-};
-
-</script>
-
-</body>
-</html>
+draw
