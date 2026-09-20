@@ -1,206 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SUPER SPINNING WHEEL</title>
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
-    min-height:100vh;
-    background:
-        radial-gradient(circle at center,#24113d 0%,#0b0713 45%,#030207 100%);
-    color:white;
-    font-family:Arial,Helvetica,sans-serif;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    overflow:hidden;
-}
-
-.main{
-    width:100%;
-    max-width:650px;
-    padding:20px;
-    text-align:center;
-}
-
-.title{
-    font-size:clamp(28px,8vw,52px);
-    font-weight:900;
-    letter-spacing:2px;
-    margin-bottom:5px;
-    text-shadow:
-        0 0 8px #b52cff,
-        0 0 20px #b52cff,
-        0 0 40px #7b00ff;
-}
-
-.subtitle{
-    color:#bdbdbd;
-    font-size:14px;
-    letter-spacing:2px;
-    margin-bottom:22px;
-}
-
-.wheel-area{
-    position:relative;
-    width:min(88vw,470px);
-    height:min(88vw,470px);
-    margin:0 auto;
-}
-
-#wheel{
-    width:100%;
-    height:100%;
-    display:block;
-    border-radius:50%;
-    filter:
-        drop-shadow(0 0 8px #a400ff)
-        drop-shadow(0 0 25px #7b00ff);
-}
-
-.pointer{
-    position:absolute;
-    z-index:10;
-    left:50%;
-    top:-5px;
-    transform:translateX(-50%);
-    width:0;
-    height:0;
-    border-left:20px solid transparent;
-    border-right:20px solid transparent;
-    border-top:42px solid white;
-    filter:
-        drop-shadow(0 0 5px white)
-        drop-shadow(0 0 12px #c000ff);
-}
-
-.spin-button{
-    margin-top:28px;
-    padding:16px 45px;
-    border:none;
-    border-radius:50px;
-    background:linear-gradient(90deg,#761cff,#d500ff);
-    color:white;
-    font-size:21px;
-    font-weight:900;
-    letter-spacing:1px;
-    cursor:pointer;
-    box-shadow:
-        0 0 12px #a900ff,
-        0 0 30px #7200ff;
-    transition:.2s;
-}
-
-.spin-button:active{
-    transform:scale(.94);
-}
-
-.spin-button:disabled{
-    opacity:.5;
-    cursor:not-allowed;
-}
-
-.winner{
-    min-height:55px;
-    margin-top:20px;
-    font-size:30px;
-    font-weight:900;
-    color:white;
-    text-shadow:
-        0 0 10px #ff00e6,
-        0 0 25px #9d00ff;
-}
-
-@media(max-width:500px){
-    .main{
-        padding:14px;
-    }
-
-    .subtitle{
-        margin-bottom:15px;
-    }
-
-    .spin-button{
-        margin-top:20px;
-        padding:14px 38px;
-        font-size:18px;
-    }
-
-    .winner{
-        font-size:25px;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<div class="main">
-
-    <div class="title">SUPER SPINNING WHEEL</div>
-
-    <div class="subtitle">
-        SPIN THE WHEEL • FIND THE WINNER
-    </div>
-
-    <div class="wheel-area">
-
-        <div class="pointer"></div>
-
-        <canvas id="wheel" width="800" height="800"></canvas>
-
-    </div>
-
-    <button class="spin-button" id="spinButton">
-        🎡 SPIN
-    </button>
-
-    <div class="winner" id="winner"></div>
-
-</div>
-
 <script>
-
-/* =========================
-   PLAYERS + AUDIO
-========================= */
-
 const players = [
-    {
-        name: "FAYIS",
-        audio: "fayis.mp3"
-    },
-    {
-        name: "AFLAH",
-        audio: "aflah.mp3"
-    },
-    {
-        name: "ADIL",
-        audio: "adil.mp3"
-    },
-    {
-        name: "SINAN",
-        audio: "sinan.mp3"
-    }
+  { name: "FAYIS", audio: "fayis.mp3" },
+  { name: "AFLAH", audio: "aflah.mp3" },
+  { name: "ADIL", audio: "adil.mp3" },
+  { name: "SINAN", audio: "sinan.mp3" }
 ];
-
-
-/* =========================
-   WHEEL SETUP
-========================= */
 
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
-
 const spinButton = document.getElementById("spinButton");
 const winnerText = document.getElementById("winner");
 
@@ -208,375 +15,235 @@ const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const radius = 375;
 
-const totalPlayers = players.length;
-const segmentAngle = (Math.PI * 2) / totalPlayers;
+const count = players.length;
+const segment = Math.PI * 2 / count;
 
 let rotation = 0;
 let spinning = false;
-
-
-/* =========================
-   AUDIO SETUP
-========================= */
+let currentAudio = null;
 
 const audioMap = {};
 
 players.forEach(player => {
-
-    const audio = new Audio(player.audio);
-
-    audio.preload = "auto";
-
-    audioMap[player.name] = audio;
-
+  const audio = new Audio(player.audio);
+  audio.preload = "auto";
+  audioMap[player.name] = audio;
 });
 
-let playingAudio = null;
-
-
-function stopAudio(){
-
-    if(playingAudio){
-
-        playingAudio.pause();
-        playingAudio.currentTime = 0;
-        playingAudio = null;
-
-    }
-
+function stopAudio() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
 }
 
+function playWinner(name) {
+  stopAudio();
 
-function playWinnerAudio(playerName){
+  currentAudio = audioMap[name];
 
-    stopAudio();
-
-    const audio = audioMap[playerName];
-
-    if(!audio){
-        return;
-    }
-
-    playingAudio = audio;
-
-    audio.currentTime = 0;
-
-    audio.play().catch(error => {
-
-        console.log("Audio could not autoplay:", error);
-
-    });
-
+  if (currentAudio) {
+    currentAudio.currentTime = 0;
+    currentAudio.play().catch(() => {});
+  }
 }
 
+function drawWheel() {
 
-/* =========================
-   DRAW WHEEL
-========================= */
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-function drawWheel(){
+  const colors = [
+    "#ff1744",
+    "#7c4dff",
+    "#00d9ff",
+    "#ffcc00"
+  ];
 
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+  for (let i = 0; i < count; i++) {
 
+    const start =
+      rotation +
+      i * segment -
+      segment / 2;
 
-    const colors = [
-        "#ff1744",
-        "#7c4dff",
-        "#00d9ff",
-        "#ffcc00"
-    ];
-
-
-    for(let i = 0; i < totalPlayers; i++){
-
-        const startAngle =
-            rotation +
-            i * segmentAngle -
-            segmentAngle / 2;
-
-        const endAngle =
-            startAngle +
-            segmentAngle;
-
-
-        /* Segment */
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            centerX,
-            centerY
-        );
-
-        ctx.arc(
-            centerX,
-            centerY,
-            radius,
-            startAngle,
-            endAngle
-        );
-
-        ctx.closePath();
-
-        ctx.fillStyle = colors[i];
-
-        ctx.fill();
-
-
-        /* Border */
-
-        ctx.strokeStyle = "#ffffff";
-
-        ctx.lineWidth = 7;
-
-        ctx.stroke();
-
-
-        /* Name */
-
-        const textAngle =
-            startAngle +
-            segmentAngle / 2;
-
-
-        const textX =
-            centerX +
-            Math.cos(textAngle) * radius * 0.62;
-
-        const textY =
-            centerY +
-            Math.sin(textAngle) * radius * 0.62;
-
-
-        ctx.save();
-
-        ctx.translate(
-            textX,
-            textY
-        );
-
-        ctx.rotate(
-            textAngle + Math.PI / 2
-        );
-
-
-        ctx.fillStyle = "#ffffff";
-
-        ctx.font =
-            "900 48px Arial";
-
-        ctx.textAlign = "center";
-
-        ctx.textBaseline = "middle";
-
-        ctx.shadowColor = "#000000";
-
-        ctx.shadowBlur = 10;
-
-
-        ctx.fillText(
-            players[i].name,
-            0,
-            0
-        );
-
-
-        ctx.restore();
-
-    }
-
-
-    /* Center circle */
+    const end = start + segment;
 
     ctx.beginPath();
-
+    ctx.moveTo(centerX, centerY);
     ctx.arc(
-        centerX,
-        centerY,
-        55,
-        0,
-        Math.PI * 2
+      centerX,
+      centerY,
+      radius,
+      start,
+      end
     );
+    ctx.closePath();
 
-    ctx.fillStyle = "#090909";
-
+    ctx.fillStyle = colors[i];
     ctx.fill();
 
     ctx.strokeStyle = "#ffffff";
-
     ctx.lineWidth = 7;
-
     ctx.stroke();
 
+    const angle = start + segment / 2;
 
-    ctx.beginPath();
+    const textX =
+      centerX +
+      Math.cos(angle) * radius * 0.62;
 
-    ctx.arc(
-        centerX,
-        centerY,
-        18,
-        0,
-        Math.PI * 2
-    );
+    const textY =
+      centerY +
+      Math.sin(angle) * radius * 0.62;
 
-    ctx.fillStyle = "#c026ff";
+    ctx.save();
 
-    ctx.shadowColor = "#c026ff";
+    ctx.translate(textX, textY);
+    ctx.rotate(angle + Math.PI / 2);
 
-    ctx.shadowBlur = 20;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 48px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
-    ctx.fill();
+    ctx.shadowColor = "#000000";
+    ctx.shadowBlur = 10;
 
-    ctx.shadowBlur = 0;
+    ctx.fillText(players[i].name, 0, 0);
 
+    ctx.restore();
+  }
+
+  /* Center */
+
+  ctx.beginPath();
+  ctx.arc(
+    centerX,
+    centerY,
+    55,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fillStyle = "#090909";
+  ctx.fill();
+
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 7;
+  ctx.stroke();
 }
-
-
-/* First draw */
 
 drawWheel();
 
 
-/* =========================
-   SPIN
-========================= */
+spinButton.addEventListener("click", () => {
 
-spinButton.addEventListener("click", function(){
+  if (spinning) return;
 
-    if(spinning){
-        return;
-    }
+  spinning = true;
+  spinButton.disabled = true;
 
-    spinning = true;
+  winnerText.textContent = "";
 
-    spinButton.disabled = true;
+  /* Previous audio stops immediately */
+  stopAudio();
 
-    winnerText.textContent = "";
+  /* Pick exactly one winner */
+  const winnerIndex =
+    Math.floor(Math.random() * count);
 
-    /* Stop previous winner audio immediately */
+  const winner =
+    players[winnerIndex];
 
-    stopAudio();
+  /*
+    Pointer is at the top.
+    Make the selected segment finish there.
+  */
+
+  const pointer = -Math.PI / 2;
+
+  const wantedRotation =
+    pointer -
+    winnerIndex * segment;
+
+  /*
+    9 complete spins
+    + exact final position
+  */
+
+  const fullSpins =
+    Math.PI * 2 * 9;
+
+  const startRotation = rotation;
+
+  const finalRotation =
+    startRotation +
+    fullSpins +
+    (wantedRotation - startRotation) % (Math.PI * 2);
+
+  const total =
+    finalRotation - startRotation;
+
+  /*
+    5.2 seconds
+  */
+
+  const duration = 5200;
+
+  const startTime =
+    performance.now();
 
 
-    /* Choose winner */
+  function spin(now) {
 
-    const winnerIndex =
-        Math.floor(
-            Math.random() * totalPlayers
-        );
+    const elapsed =
+      now - startTime;
 
-
-    const winner =
-        players[winnerIndex];
-
+    const progress =
+      Math.min(
+        elapsed / duration,
+        1
+      );
 
     /*
-       Pointer is at the top.
-       Target angle makes the selected
-       segment center land exactly there.
+      Fast start → smooth slow finish
     */
 
-    const pointerAngle = -Math.PI / 2;
+    const eased =
+      1 -
+      Math.pow(
+        1 - progress,
+        4
+      );
 
+    rotation =
+      startRotation +
+      total * eased;
 
-    const targetRotation =
-        pointerAngle -
-        winnerIndex * segmentAngle +
-        Math.PI * 2 * 7;
+    drawWheel();
 
+    if (progress < 1) {
 
-    const startRotation = rotation;
+      requestAnimationFrame(spin);
 
-    const totalRotation =
-        targetRotation - startRotation;
+    } else {
 
+      rotation = finalRotation;
 
-    const duration = 4500;
+      drawWheel();
 
-    const startTime =
-        performance.now();
+      winnerText.textContent =
+        "🏆 WINNER: " + winner.name;
 
+      /* Correct audio for exact winner */
+      playWinner(winner.name);
 
-    function animate(currentTime){
-
-        const elapsed =
-            currentTime - startTime;
-
-
-        const progress =
-            Math.min(
-                elapsed / duration,
-                1
-            );
-
-
-        /* Smooth slow-down */
-
-        const eased =
-            1 -
-            Math.pow(
-                1 - progress,
-                4
-            );
-
-
-        rotation =
-            startRotation +
-            totalRotation * eased;
-
-
-        drawWheel();
-
-
-        if(progress < 1){
-
-            requestAnimationFrame(
-                animate
-            );
-
-        }else{
-
-            rotation =
-                targetRotation;
-
-            drawWheel();
-
-
-            /* Winner */
-
-            winnerText.textContent =
-                "🏆 WINNER: " +
-                winner.name;
-
-
-            /* Exact matching audio */
-
-            playWinnerAudio(
-                winner.name
-            );
-
-
-            spinning = false;
-
-            spinButton.disabled = false;
-
-        }
-
+      spinning = false;
+      spinButton.disabled = false;
     }
+  }
 
-
-    requestAnimationFrame(
-        animate
-    );
-
+  requestAnimationFrame(spin);
 });
-
-</script>
-
-</body>
-</html>
+        </script>
